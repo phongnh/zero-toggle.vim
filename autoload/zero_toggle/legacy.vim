@@ -1,10 +1,6 @@
 " autoload/zero_toggle/legacy.vim - Toggle common Vim settings (legacy Vimscript)
 " Maintainer:   Phong Nguyen
 
-" Save cpoptions
-let s:save_cpo = &cpoptions
-set cpoptions&vim
-
 " ============================================================================
 " Helper Functions
 " ============================================================================
@@ -180,7 +176,3 @@ function! zero_toggle#legacy#setup() abort
 
     call s:setup_unimpaired_mappings()
 endfunction
-
-" Restore cpoptions
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
