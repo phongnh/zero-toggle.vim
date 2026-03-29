@@ -126,3 +126,6 @@ MIT License
 ## Credits
 
 Created by Phong Nguyen
+
+The unimpaired-style `yo*` mappings and line-move mappings are inspired by
+[vim-unimpaired](https://github.com/tpope/vim-unimpaired) by Tim Pope.
