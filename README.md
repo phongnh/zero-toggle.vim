@@ -13,7 +13,7 @@ A Vim plugin to toggle the most commonly used Vim settings with intuitive `yo*` 
 - Improved fold mappings that echo the current `foldlevel`
 - Line-move mappings (`<M-j>` / `<M-k>`) when vim-unimpaired is absent
 - Automatically skips unimpaired-style mappings when [vim-unimpaired](https://github.com/tpope/vim-unimpaired) is loaded
-- Works with **legacy Vim** (7.4+), **Vim 9** (Vim9script), and **Neovim** (Lua)
+- Works with **Vim** (7.4+) and **Neovim** (Lua)
 
 ## Installation
 
@@ -111,12 +111,11 @@ let g:zero_toggle_unimpaired_mappings = 0
 
 ## Versions
 
-The plugin ships all three implementations and selects the right one automatically:
+The plugin ships all two implementations and selects the right one automatically:
 
 | Implementation | File | Loaded when |
 |---|---|---|
-| Vim9script | `plugin/zero_toggle.vim` | Vim with `vim9script` support (Vim 9.0+) |
-| Legacy Vimscript | `plugin/zero_toggle_legacy.vim` | Vim without `vim9script` (Vim 7.4+) |
+| Vimscript | `plugin/zero_toggle.vim` | Vim |
 | Lua | `plugin/zero_toggle.lua` | Neovim |
 
 ## License
