@@ -115,8 +115,8 @@ The plugin ships all three implementations and selects the right one automatical
 
 | Implementation | File | Loaded when |
 |---|---|---|
-| Vim9script | `plugin/zero_toggle.vim` | Vim with `vim9script` support (Vim 9.0+) |
-| Legacy Vimscript | `plugin/zero_toggle_legacy.vim` | Vim without `vim9script` (Vim 7.4+) |
+| Vim9script | `vim9/plugin/zero_toggle.vim` | Vim with `vim9script` support (Vim 9.0+) |
+| Legacy Vimscript | `plugin/zero_toggle.vim` | Vim without `vim9script` (Vim 7.4+) |
 | Lua | `plugin/zero_toggle.lua` | Neovim |
 
 ## License
