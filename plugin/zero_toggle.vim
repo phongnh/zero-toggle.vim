@@ -1,17 +1,14 @@
-" plugin/zero_toggle.vim - Toggle common Vim settings
+" plugin/zero_toggle.vim - Toggle common Vim settings (Vim9script)
 " Maintainer:   Phong Nguyen
 
-if has('nvim') || exists('g:loaded_zero_toggle')
+if !has('vim9script') || has('nvim') || exists('g:loaded_zero_toggle')
     finish
 endif
-let g:loaded_zero_toggle = 1
 
-" Save cpoptions
-let s:save_cpo = &cpoptions
-set cpoptions&vim
+vim9script
 
-call zero_toggle#setup()
+g:loaded_zero_toggle = 1
 
-" Restore cpoptions
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
+import autoload 'zero_toggle.vim' as ZeroToggle
+
+ZeroToggle.Setup()
