@@ -135,7 +135,7 @@ function! zero_toggle#setup() abort
         nnoremap <expr> yoC printf(":\<C-U>set conceallevel=%s\<CR>", &conceallevel > 0 ? 0 : 2)
     endif
 
-    " Cycle diff algorithm
+    " Cycle diffopt's algorithm option: histogram <-> patience
     if has('diff')
         nnoremap yoD :<C-U>set diffopt+=<C-R>=&diffopt =~# 'algorithm:histogram' ? 'algorithm:patience' : 'algorithm:histogram'<CR><CR>
     endif

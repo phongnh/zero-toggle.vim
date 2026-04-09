@@ -52,7 +52,7 @@ def SetupUnimpairedMappings()
     nnoremap <silent> yo_ :<C-U>setlocal cursorline! cursorline?<CR>
     # Cursorcolumn
     nnoremap <silent> you :<C-U>setlocal cursorcolumn! cursorcolumn?<CR>
-    nnoremap <silent> <expr> yo<Bar> ":\<C-U>setlocal cursorcolumn! cursorcolumn?\<CR>"
+    nnoremap <silent> yo<Bar> :<C-U>setlocal cursorcolumn! cursorcolumn?<CR>
     # Hlsearch
     nnoremap <silent> yoh :<C-U>set hlsearch! hlsearch?<CR>
     # Ignorecase
@@ -137,7 +137,7 @@ export def Setup()
         nnoremap <expr> yoC printf(":\<C-U>set conceallevel=%s\<CR>", &conceallevel > 0 ? 0 : 2)
     endif
 
-    # Cycle diff algorithm
+    # Cycle diffopt's algorithm option: histogram <-> patience
     if has('diff')
         nnoremap yoD :<C-U>set diffopt+=<C-R>=&diffopt =~# 'algorithm:histogram' ? 'algorithm:patience' : 'algorithm:histogram'<CR><CR>
     endif
