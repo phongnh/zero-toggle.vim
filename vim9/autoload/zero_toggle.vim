@@ -101,17 +101,6 @@ def SetupUnimpairedMappings()
     vmap [e <M-k>
 enddef
 
-def SetupIndentGuidesAutocmd()
-    augroup ZeroToggleShiftwidth
-        autocmd!
-        autocmd OptionSet shiftwidth
-                    \   if &listchars =~# '\V\<leadmultispace\>'
-                    \ |     execute printf('set listchars-=leadmultispace:┊%s', escape(repeat(' ', v:option_old - 1), ' '))
-                    \ |     execute printf('set listchars+=leadmultispace:┊%s', escape(repeat(' ', v:option_new - 1), ' '))
-                    \ | endif
-    augroup END
-enddef
-
 # ============================================================================
 # Exported Setup Function
 # ============================================================================
@@ -150,21 +139,27 @@ export def Setup()
 
     # Cycle diff algorithm
     if has('diff')
-        nnoremap yoD :<C-U>set <C-R>=&diffopt =~# 'algorithm:histogram' ? 'diffopt-=algorithm:histogram diffopt+=algorithm:patience' : 'diffopt-=algorithm:patience diffopt+=algorithm:histogram'<CR><CR>
+        nnoremap yoD :<C-U>set diffopt+=<C-R>=&diffopt =~# 'algorithm:histogram' ? 'algorithm:patience' : 'algorithm:histogram'<CR><CR>
     endif
 
     # Toggle EOL in listchars
-    nnoremap <expr> yoE printf(":\<C-U>set listchars%s=eol:§\<CR>", &listchars =~# '\V\<eol\>' ? '-' : '+')
+    nnoremap <expr> yoE printf(":\<C-U>setlocal listchars%s=eol:§\<CR>", &listchars =~# '\V\<eol\>' ? '-' : '+')
 
     # Toggle trailing space in listchars
-    nnoremap <expr> yo<Space> printf(":\<C-U>set listchars%s=trail:·\<CR>", &listchars =~# '\V\<trail\>' ? '-' : '+')
+    nnoremap <expr> yo<Space> printf(":\<C-U>setlocal listchars%s=trail:·\<CR>", &listchars =~# '\V\<trail\>' ? '-' : '+')
 
     # Toggle indent guides (requires Vim patch 8.2.5066 for leadmultispace)
     if has('patch-8.2.5066')
-        nnoremap <expr> yoI printf(":\<C-U>set listchars%s=leadmultispace:┊%s\<CR>",
-            \ &listchars =~# '\V\<leadmultispace\>' ? '-' : '+',
-            \ escape(repeat(' ', shiftwidth() - 1), ' '))
-        SetupIndentGuidesAutocmd()
+        nnoremap <expr> yoI printf(":\<C-U>setlocal listchars%s=leadmultispace:┊%s\<CR>", &listchars =~# '\V\<leadmultispace\>' ? '-' : '+', escape(repeat(' ', shiftwidth() - 1), ' '))
+
+        augroup ZeroToggleShiftwidth
+            autocmd!
+            autocmd OptionSet shiftwidth
+                        \   if &listchars =~# '\V\<leadmultispace\>'
+                        \ |     execute printf('setlocal listchars-=leadmultispace:┊%s', escape(repeat(' ', v:option_old - 1), ' '))
+                        \ |     execute printf('setlocal listchars+=leadmultispace:┊%s', escape(repeat(' ', v:option_new - 1), ' '))
+                        \ | endif
+        augroup END
     endif
 
     # Improved fold mappings — show foldlevel after each change
