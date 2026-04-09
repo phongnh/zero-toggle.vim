@@ -10,6 +10,7 @@ local M = {}
 local map = vim.keymap.set
 local fn = vim.fn
 local o = vim.o
+local opt_local = vim.opt_local
 
 --- Toggle gj/gk <-> j/k mappings.
 local function toggle_gjk()
@@ -54,63 +55,34 @@ local function setup_unimpaired_mappings()
   end, silent)
 
   -- Cursorline
-  local function toggle_cursorline()
-    vim.wo.cursorline = not vim.wo.cursorline
-    vim.api.nvim_echo({ { "cursorline " .. (vim.wo.cursorline and "on" or "off") } }, false, {})
-  end
-  map("n", "yoc", toggle_cursorline, silent)
-  map("n", "yo-", toggle_cursorline, silent)
-  map("n", "yo_", toggle_cursorline, silent)
+  map("n", "yoc", "<Cmd>setlocal cursorline! cursorline!<CR>", silent)
+  map("n", "yo-", "<Cmd>setlocal cursorline! cursorline!<CR>", silent)
+  map("n", "yo_", "<Cmd>setlocal cursorline! cursorline!<CR>", silent)
 
   -- Cursorcolumn
-  local function toggle_cursorcolumn()
-    vim.wo.cursorcolumn = not vim.wo.cursorcolumn
-    vim.api.nvim_echo({ { "cursorcolumn " .. (vim.wo.cursorcolumn and "on" or "off") } }, false, {})
-  end
-  map("n", "you", toggle_cursorcolumn, silent)
-  map("n", "yo|", toggle_cursorcolumn, silent)
+  map("n", "you", "<Cmd>setlocal cursorcolumn! cursorcolumn?<CR>", silent)
+  map("n", "yo|", "<Cmd>setlocal cursorcolumn! cursorcolumn?<CR>", silent)
 
   -- Hlsearch
-  map("n", "yoh", function()
-    o.hlsearch = not o.hlsearch
-    vim.api.nvim_echo({ { "hlsearch " .. (o.hlsearch and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yoh", "<Cmd>set hlsearch! hlsearch?<CR>", silent)
 
   -- Ignorecase
-  map("n", "yoi", function()
-    o.ignorecase = not o.ignorecase
-    vim.api.nvim_echo({ { "ignorecase " .. (o.ignorecase and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yoi", "<Cmd>set ignorecase! ignorecase?<CR>", silent)
 
   -- List
-  map("n", "yol", function()
-    vim.wo.list = not vim.wo.list
-    vim.api.nvim_echo({ { "list " .. (vim.wo.list and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yol", "<Cmd>setlocal list! list?<CR>", silent)
 
   -- Number
-  map("n", "yon", function()
-    vim.wo.number = not vim.wo.number
-    vim.api.nvim_echo({ { "number " .. (vim.wo.number and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yol", "<Cmd>setlocal number! number?<CR>", silent)
 
   -- Relativenumber
-  map("n", "yor", function()
-    vim.wo.relativenumber = not vim.wo.relativenumber
-    vim.api.nvim_echo({ { "relativenumber " .. (vim.wo.relativenumber and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yol", "<Cmd>setlocal relativenumber! relativenumber?<CR>", silent)
 
   -- Spell
-  map("n", "yos", function()
-    vim.wo.spell = not vim.wo.spell
-    vim.api.nvim_echo({ { "spell " .. (vim.wo.spell and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yol", "<Cmd>setlocal spell! spell?<CR>", silent)
 
   -- Wrap
-  map("n", "yow", function()
-    vim.wo.wrap = not vim.wo.wrap
-    vim.api.nvim_echo({ { "wrap " .. (vim.wo.wrap and "on" or "off") } }, false, {})
-  end, silent)
+  map("n", "yow", "<Cmd>setlocal wrap! wrap?<CR>", silent)
 
   -- Virtualedit
   map("n", "yov", function()

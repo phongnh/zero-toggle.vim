@@ -6,6 +6,4 @@ if vim.g.loaded_zero_toggle then
 end
 vim.g.loaded_zero_toggle = 1
 
-local zero_toggle = require("zero_toggle")
-
-zero_toggle.setup()
+require("zero_toggle").setup()
