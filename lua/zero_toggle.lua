@@ -146,32 +146,6 @@ local function setup_unimpaired_mappings()
   map("v", "[e", "<M-k>")
 end
 
---- Set up the shiftwidth autocmd for indent-guides leadmultispace sync.
-local function setup_indent_guides_autocmd()
-  vim.api.nvim_create_augroup("ZeroToggleShiftwidth", { clear = true })
-  vim.api.nvim_create_autocmd("OptionSet", {
-    group = "ZeroToggleShiftwidth",
-    pattern = "shiftwidth",
-    callback = function(ev)
-      local lc = o.listchars
-      if not lc:find("leadmultispace") then
-        return
-      end
-      local old_sw = ev.match and tonumber(ev.match) or (vim.v.option_old and tonumber(vim.v.option_old))
-      local new_sw = tonumber(vim.v.option_new) or fn.shiftwidth()
-      if old_sw and old_sw > 1 then
-        lc = lc:gsub("leadmultispace:┊" .. string.rep(" ", old_sw - 1) .. ",?", "")
-          :gsub(",leadmultispace:┊" .. string.rep(" ", old_sw - 1), "")
-      elseif old_sw == 1 then
-        lc = lc:gsub("leadmultispace:┊,?", ""):gsub(",leadmultispace:┊", "")
-      end
-      local suffix = new_sw > 1 and ("┊" .. string.rep(" ", new_sw - 1)) or "┊"
-      lc = lc ~= "" and (lc .. ",leadmultispace:" .. suffix) or ("leadmultispace:" .. suffix)
-      o.listchars = lc
-    end,
-  })
-end
-
 -- ============================================================================
 -- Public API
 -- ============================================================================
@@ -299,38 +273,37 @@ function M.setup()
     end
     vim.api.nvim_echo({ { "listchars=" .. o.listchars } }, false, {})
   end, silent)
-  setup_indent_guides_autocmd()
+
+  vim.api.nvim_create_autocmd("OptionSet", {
+    group = vim.api.nvim_create_augroup("ZeroToggleShiftwidth", { clear = true }),
+    pattern = "shiftwidth",
+    callback = function(ev)
+      local lc = o.listchars
+      if not lc:find("leadmultispace") then
+        return
+      end
+      local old_sw = ev.match and tonumber(ev.match) or (vim.v.option_old and tonumber(vim.v.option_old))
+      local new_sw = tonumber(vim.v.option_new) or fn.shiftwidth()
+      if old_sw and old_sw > 1 then
+        lc = lc:gsub("leadmultispace:┊" .. string.rep(" ", old_sw - 1) .. ",?", "")
+          :gsub(",leadmultispace:┊" .. string.rep(" ", old_sw - 1), "")
+      elseif old_sw == 1 then
+        lc = lc:gsub("leadmultispace:┊,?", ""):gsub(",leadmultispace:┊", "")
+      end
+      local suffix = new_sw > 1 and ("┊" .. string.rep(" ", new_sw - 1)) or "┊"
+      lc = lc ~= "" and (lc .. ",leadmultispace:" .. suffix) or ("leadmultispace:" .. suffix)
+      o.listchars = lc
+    end,
+  })
 
   -- Improved fold mappings — echo foldlevel after each change
-  map("n", "zr", function()
-    vim.cmd("normal! zr")
-    vim.api.nvim_echo({ { "foldlevel=" .. vim.wo.foldlevel } }, false, {})
-  end, silent)
-  map("n", "zm", function()
-    vim.cmd("normal! zm")
-    vim.api.nvim_echo({ { "foldlevel=" .. vim.wo.foldlevel } }, false, {})
-  end, silent)
-  map("n", "zR", function()
-    vim.cmd("normal! zR")
-    vim.api.nvim_echo({ { "foldlevel=" .. vim.wo.foldlevel } }, false, {})
-  end, silent)
-  map("n", "zM", function()
-    vim.cmd("normal! zM")
-    vim.api.nvim_echo({ { "foldlevel=" .. vim.wo.foldlevel } }, false, {})
-  end, silent)
-  map("n", "zi", function()
-    vim.cmd("normal! zi")
-    vim.api.nvim_echo({ { "foldenable " .. (vim.wo.foldenable and "on" or "off") } }, false, {})
-  end, silent)
-  map("n", "z]", function()
-    vim.wo.foldcolumn = tostring(tonumber(vim.wo.foldcolumn) + 1)
-    vim.api.nvim_echo({ { "foldcolumn=" .. vim.wo.foldcolumn } }, false, {})
-  end, silent)
-  map("n", "z[", function()
-    local fc = math.max(tonumber(vim.wo.foldcolumn) - 1, 0)
-    vim.wo.foldcolumn = tostring(fc)
-    vim.api.nvim_echo({ { "foldcolumn=" .. vim.wo.foldcolumn } }, false, {})
-  end, silent)
+  map("n", "zr", "zr<Cmd>setlocal foldlevel?<CR>", silent)
+  map("n", "zm", "zm<Cmd>setlocal foldlevel?<CR>", silent)
+  map("n", "zR", "zR<Cmd>setlocal foldlevel?<CR>", silent)
+  map("n", "zM", "zM<Cmd>setlocal foldlevel?<CR>", silent)
+  map("n", "zi", "zi<Cmd>setlocal foldlevel?<CR>", silent)
+  map("n", "z]", "<Cmd>let &foldcolumn = &foldcolumn + 1<CR><Cmd>setlocal foldcolumn?<CR>", silent)
+  map("n", "z[", "<Cmd>let &foldcolumn = &foldcolumn - 1<CR><Cmd>setlocal foldcolumn?<CR>", silent)
 
   setup_unimpaired_mappings()
 end
