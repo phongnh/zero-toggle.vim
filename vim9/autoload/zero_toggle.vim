@@ -31,19 +31,42 @@ def ToggleGJK()
     endif
 enddef
 
-def SetupUnimpairedMappings()
-    # g:zero_toggle_unimpaired_mappings:
-    #   1   → always set mappings
-    #   0   → never set mappings
-    #   unset → auto-detect: skip if vim-unimpaired is on the runtimepath
-    var opt = get(g:, 'zero_toggle_unimpaired_mappings', -1)
-    if opt == 0
-        return
+# Move lines up/down
+def SetupMoveMappings()
+    nnoremap <silent> <Plug>(MoveLineUp)   <Cmd>move .-2<Bar>normal! ==<CR>
+    nnoremap <silent> <Plug>(MoveLineDown) <Cmd>move .+1<Bar>normal! ==<CR>
+    vnoremap <silent> <Plug>(MoveLineUp)   :move '<-2<Bar>normal! gv=gv<CR>
+    vnoremap <silent> <Plug>(MoveLineDown) :move '>+1<Bar>normal! gv=gv<CR>
+    inoremap <silent> <Plug>(MoveLineUp)   <Cmd>move .-2<Bar>normal! ==<CR>
+    inoremap <silent> <Plug>(MoveLineDown) <Cmd>move .+1<Bar>normal! ==<CR>
+    # inoremap <silent> <Plug>(InsertMoveLineUp)   <C-O>:move .-2<Bar>normal! ==<CR>
+    # inoremap <silent> <Plug>(InsertMoveLineDown) <C-O>:move .+1<Bar>normal! ==<CR>
+    # macOS Alt key aliases (Option+J / Option+K) (∆ / ˚)
+    if has('mac')
+        # Kitty sends ∆ / ˚
+        execute 'nmap ˚ <Plug>(MoveLineUp)'
+        execute 'nmap ∆ <Plug>(MoveLineDown)'
+        execute 'vmap ˚ <Plug>(MoveLineUp)'
+        execute 'vmap ∆ <Plug>(MoveLineDown)'
+        execute 'imap ˚ <Plug>(MoveLineUp)'
+        execute 'imap ∆ <Plug>(MoveLineDown)'
+        # Alacritty / Wezterm send <1b>j / <1b>k
+        execute 'nmap k <Plug>(MoveLineUp)'
+        execute 'nmap j <Plug>(MoveLineDown)'
+        execute 'vmap k <Plug>(MoveLineUp)'
+        execute 'vmap j <Plug>(MoveLineDown)'
+        execute 'imap k <Plug>(MoveLineUp)'
+        execute 'imap j <Plug>(MoveLineDown)'
     endif
-    if opt < 0 && !empty(globpath(&rtp, 'plugin/unimpaired.vim'))
-        return
-    endif
+    nmap <M-j> <Plug>(MoveLineDown)
+    nmap <M-k> <Plug>(MoveLineUp)
+    vmap <M-j> <Plug>(MoveLineDown)
+    vmap <M-k> <Plug>(MoveLineUp)
+    imap <M-j> <Plug>(MoveLineDown)
+    imap <M-k> <Plug>(MoveLineUp)
+enddef
 
+def SetupUnimpairedMappings()
     # Background
     nnoremap <silent> yob :<C-U>set background=<C-R>=&background == 'dark' ? 'light' : 'dark'<CR><CR><Cmd>set background?<CR>
     # Cursorline
@@ -80,32 +103,13 @@ def SetupUnimpairedMappings()
     endif
 
     # Move lines up/down
-    nnoremap <silent> <M-j> <Cmd>move .+1<Bar>normal! ==<CR>
-    nnoremap <silent> <M-k> <Cmd>move .-2<Bar>normal! ==<CR>
-    vnoremap <silent> <M-j> :move '>+1<Bar>normal! gv=gv<CR>
-    vnoremap <silent> <M-k> :move '<-2<Bar>normal! gv=gv<CR>
-    inoremap <silent> <M-j> <Cmd>move .+1<Bar>normal! ==<CR>
-    inoremap <silent> <M-k> <Cmd>move .-2<Bar>normal! ==<CR>
-
-    # macOS Alt key aliases (Option+J / Option+K)
-    nmap ∆ <M-j>
-    nmap ˚ <M-k>
-    vmap ∆ <M-j>
-    vmap ˚ <M-k>
-    imap ∆ <M-j>
-    imap ˚ <M-k>
-
-    nmap ]e <M-j>
-    nmap [e <M-k>
-    vmap ]e <M-j>
-    vmap [e <M-k>
+    nmap [e <Plug>(MoveLineUp)
+    nmap ]e <Plug>(MoveLineDown)
+    vmap [e <Plug>(MoveLineUp)
+    vmap ]e <Plug>(MoveLineDown)
 enddef
 
-# ============================================================================
-# Exported Setup Function
-# ============================================================================
-
-export def Setup()
+def SetupToggleMappings()
     # Change shiftwidth / tabstop
     nnoremap <silent> yo2 :<C-U>setlocal <C-R>=&expandtab ? 'shiftwidth=2 shiftwidth?' : 'tabstop=2 tabstop?'<CR><CR>
     nnoremap <silent> yo4 :<C-U>setlocal <C-R>=&expandtab ? 'shiftwidth=4 shiftwidth?' : 'tabstop=4 tabstop?'<CR><CR>
@@ -170,6 +174,18 @@ export def Setup()
     nnoremap <silent> zi zi:<C-U>setlocal foldenable?<CR>
     nnoremap <silent> z] :<C-U>let &foldcolumn = &foldcolumn + 1<Bar>setlocal foldcolumn?<CR>
     nnoremap <silent> z[ :<C-U>let &foldcolumn = &foldcolumn - 1<Bar>setlocal foldcolumn?<CR>
+enddef
 
-    SetupUnimpairedMappings()
+# ============================================================================
+# Exported Setup Function
+# ============================================================================
+
+export def Setup()
+    SetupMoveMappings()
+    if exists('g:zero_toggle_unimpaired_mappings') && g:zero_toggle_unimpaired_mappings
+        SetupUnimpairedMappings()
+    elseif !exists('g:zero_toggle_unimpaired_mappings') && globpath(&rtp, 'plugin/unimpaired.vim')->empty()
+        SetupUnimpairedMappings()
+    endif
+    SetupToggleMappings()
 enddef
