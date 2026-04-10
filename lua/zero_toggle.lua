@@ -15,21 +15,17 @@ local opt_local = vim.opt_local
 --- Toggle gj/gk <-> j/k mappings.
 local function toggle_gjk()
   if fn.mapcheck("j", "n") == "" or fn.mapcheck("k", "n") == "" then
-    map({ "n", "x" }, "j", function()
-      return vim.v.count == 0 and "gj" or "j"
-    end, { expr = true })
-    map({ "n", "x" }, "k", function()
-      return vim.v.count == 0 and "gk" or "k"
-    end, { expr = true })
+    map({ "n", "x" }, "j", [[v:count == 0 ? 'gj' : 'j']], { expr = true })
+    map({ "n", "x" }, "k", [[v:count == 0 ? 'gk' : 'k']], { expr = true })
     map({ "n", "x" }, "gj", "j")
-    map({ "n", "x" }, "gk", "k")
-    vim.api.nvim_echo({ { "Enabled gj/gk!" } }, false, {})
+    map({ "n", "x" }, "gj", "k")
+    vim.print("Enabled gj/gk!")
   else
     for _, lhs in ipairs({ "j", "k", "gj", "gk" }) do
       pcall(vim.keymap.del, "n", lhs)
       pcall(vim.keymap.del, "x", lhs)
     end
-    vim.api.nvim_echo({ { "Disabled gj/gk!" } }, false, {})
+    vim.print("Disabled gj/gk!")
   end
 end
 
