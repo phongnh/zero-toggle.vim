@@ -7,7 +7,20 @@ local M = {}
 -- Helper Functions
 -- ============================================================================
 
-local function echo(...)
+local H = {}
+
+H.default_config = {
+  unimpaired_mappings = nil,
+}
+
+H.setup_config = function(config)
+  vim.validate("config", config, "table", true)
+  config = vim.tbl_deep_extend("force", vim.deepcopy(H.default_config), config or {})
+  vim.validate("unimpaired_mappings", config.unimpaired_mappings, "boolean", true)
+  return config
+end
+
+H.echo = function(...)
   local args = {}
   for idx = 1, select("#", ...) do
     args[idx] = select(idx, ...)
@@ -15,42 +28,23 @@ local function echo(...)
   vim.api.nvim_echo({ { table.concat(args, " ") } }, false, {})
 end
 
---- Toggle gj/gk <-> j/k mappings.
-local function toggle_gjk()
-  if vim.fn.mapcheck("j", "n") == "" or vim.fn.mapcheck("k", "n") == "" then
-    vim.keymap.set({ "n", "x" }, "j", [[v:count == 0 ? 'gj' : 'j']], { expr = true })
-    vim.keymap.set({ "n", "x" }, "k", [[v:count == 0 ? 'gk' : 'k']], { expr = true })
-    vim.keymap.set({ "n", "x" }, "gj", "j")
-    vim.keymap.set({ "n", "x" }, "gj", "k")
-    echo("Enabled gj/gk!")
-  else
-    for _, lhs in ipairs({ "j", "k", "gj", "gk" }) do
-      pcall(vim.keymap.del, "n", lhs)
-      pcall(vim.keymap.del, "x", lhs)
-    end
-    echo("Disabled gj/gk!")
+H.apply_config = function(config)
+  if config.unimpaired_mappings then
+    H.setup_unimpaired_mappings()
+  elseif config.unimpaired_mappings == nil and vim.fn.globpath(vim.o.rtp, "plugin/unimpaired.vim") ~= "" then
+    H.setup_unimpaired_mappings()
   end
+  H.setup_toggle_mappings()
 end
 
 --- Setup unimpaired-style mappings according to g:zero_toggle_unimpaired_mappings.
--- 1     → always set mappings
--- 0     → never set mappings
--- unset → auto-detect: skip if vim-unimpaired is on the runtimepath
-local function setup_unimpaired_mappings()
-  local opt = vim.g.zero_toggle_unimpaired_mappings
-  if opt == 0 then
-    return
-  end
-  if opt == nil and vim.fn.globpath(vim.o.rtp, "plugin/unimpaired.vim") ~= "" then
-    return
-  end
-
+H.setup_unimpaired_mappings = function()
   local opts = { silent = true }
 
   -- Background
   vim.keymap.set("n", "yob", function()
     vim.o.background = vim.o.background == "dark" and "light" or "dark"
-    echo("set background=" .. vim.o.background)
+    H.echo("set background=" .. vim.o.background)
   end, opts)
 
   -- Cursorline
@@ -87,22 +81,22 @@ local function setup_unimpaired_mappings()
   vim.keymap.set("n", "yov", function()
     if vim.tbl_contains(vim.opt.virtualedit:get(), "all") then
       vim.opt.virtualedit:remove("all")
-      echo("set virtualedit-=all")
+      H.echo("set virtualedit-=all")
     else
       vim.opt.virtualedit:append("all")
-      echo("set virtualedit+=all")
+      H.echo("set virtualedit+=all")
     end
   end, opts)
 
-  local function toggle_cursorline_and_cursorcolumn()
+  local toggle_cursorline_and_cursorcolumn = function()
     if vim.wo.cursorline and vim.wo.cursorcolumn then
       vim.wo.cursorline = false
       vim.wo.cursorcolumn = false
-      echo("set nocursorline nocursorcolumn")
+      H.echo("set nocursorline nocursorcolumn")
     else
       vim.wo.cursorline = true
       vim.wo.cursorcolumn = true
-      echo("set cursorline cursorcolumn")
+      H.echo("set cursorline cursorcolumn")
     end
   end
 
@@ -112,7 +106,7 @@ local function setup_unimpaired_mappings()
   -- Colorcolumn
   vim.keymap.set("n", "yot", function()
     vim.wo.colorcolumn = vim.wo.colorcolumn == "" and "+1" or ""
-    echo("set cursorcolumn=" .. vim.wo.colorcolumn)
+    H.echo("set cursorcolumn=" .. vim.wo.colorcolumn)
   end, opts)
 
   -- Diff
@@ -120,10 +114,10 @@ local function setup_unimpaired_mappings()
     vim.keymap.set("n", "yod", function()
       if vim.wo.diff then
         vim.cmd("diffoff")
-        echo("diffoff")
+        H.echo("diffoff")
       else
         vim.cmd("diffthis")
-        echo("diffthis")
+        H.echo("diffthis")
       end
     end, opts)
   end
@@ -150,15 +144,11 @@ local function setup_unimpaired_mappings()
   vim.keymap.set("v", "[e", "<M-k>")
 end
 
--- ============================================================================
--- Public API
--- ============================================================================
-
-function M.setup()
+function H.setup_toggle_mappings()
   local opts = { silent = true }
 
   -- Change shiftwidth / tabstop
-  local function change_shiftwidth_or_tabstop(size)
+  local change_shiftwidth_or_tabstop = function(size)
     return function()
       if vim.bo.expandtab then
         vim.bo.shiftwidth = size
@@ -183,8 +173,22 @@ function M.setup()
   -- Toggle "keep current line centred" (scrolloff trick)
   vim.keymap.set("n", "yoz", "<Cmd>lua vim.o.scrolloff = 1000 - vim.o.scrolloff<CR><Cmd>set scrolloff?<CR>", opts)
 
-  -- Toggle gj/gk
-  vim.keymap.set("n", "yom", toggle_gjk, opts)
+  -- Toggle gj/gk <-> j/k mappings.
+  vim.keymap.set("n", "yom", function()
+    if vim.fn.mapcheck("j", "n") == "" or vim.fn.mapcheck("k", "n") == "" then
+      vim.keymap.set({ "n", "x" }, "j", [[v:count == 0 ? 'gj' : 'j']], { expr = true })
+      vim.keymap.set({ "n", "x" }, "k", [[v:count == 0 ? 'gk' : 'k']], { expr = true })
+      vim.keymap.set({ "n", "x" }, "gj", "j")
+      vim.keymap.set({ "n", "x" }, "gj", "k")
+      H.echo("Enabled gj/gk!")
+    else
+      for _, lhs in ipairs({ "j", "k", "gj", "gk" }) do
+        pcall(vim.keymap.del, "n", lhs)
+        pcall(vim.keymap.del, "x", lhs)
+      end
+      H.echo("Disabled gj/gk!")
+    end
+  end, opts)
 
   -- Toggle clipboard
   if vim.fn.has("clipboard") == 1 then
@@ -192,10 +196,10 @@ function M.setup()
     vim.keymap.set("n", "yoy", function()
       if vim.tbl_contains(vim.opt.clipboard:get(), clipboard) then
         vim.opt.clipboard:remove(clipboard)
-        echo("set clipboard-=" .. clipboard)
+        H.echo("set clipboard-=" .. clipboard)
       else
         vim.opt.clipboard:prepend(clipboard)
-        echo("set clipboard^=" .. clipboard)
+        H.echo("set clipboard^=" .. clipboard)
       end
     end, opts)
   end
@@ -204,7 +208,7 @@ function M.setup()
   if vim.fn.has("conceal") == 1 then
     vim.keymap.set("n", "yoC", function()
       vim.wo.conceallevel = vim.wo.conceallevel > 0 and 0 or 2
-      echo("set conceallevel=" .. vim.wo.conceallevel)
+      H.echo("set conceallevel=" .. vim.wo.conceallevel)
     end, opts)
   end
 
@@ -214,10 +218,10 @@ function M.setup()
       if vim.tbl_contains(vim.opt.diffopt:get(), "algorithm:histogram") then
         vim.opt.diffopt:remove("algorithm:histogram")
         vim.opt.diffopt:append("algorithm:patience")
-        echo("set diffopt+=algorithm:patience")
+        H.echo("set diffopt+=algorithm:patience")
       else
         vim.opt.diffopt:append("algorithm:histogram")
-        echo("set diffopt+=algorithm:histogram")
+        H.echo("set diffopt+=algorithm:histogram")
       end
     end, opts)
   end
@@ -226,12 +230,12 @@ function M.setup()
   vim.keymap.set("n", "yoE", function()
     local listchars = vim.opt_local.listchars:get()
     if listchars.eol ~= nil then
-      echo("setlocal listchars-=eol:" .. listchars.eol)
+      H.echo("setlocal listchars-=eol:" .. listchars.eol)
       listchars.eol = nil
       vim.opt_local.listchars = listchars
     else
       vim.opt_local.listchars:append({ eol = "§" })
-      echo("setlocal listchars+=eol:§")
+      H.echo("setlocal listchars+=eol:§")
     end
   end, opts)
 
@@ -239,12 +243,12 @@ function M.setup()
   vim.keymap.set("n", "yo<Space>", function()
     local listchars = vim.opt_local.listchars:get()
     if listchars.trail ~= nil then
-      echo("setlocal listchars-=trail:" .. listchars.trail)
+      H.echo("setlocal listchars-=trail:" .. listchars.trail)
       listchars.trail = nil
       vim.opt_local.listchars = listchars
     else
       vim.opt_local.listchars:append({ trail = "·" })
-      echo("setlocal listchars+=trail:·")
+      H.echo("setlocal listchars+=trail:·")
     end
   end, opts)
 
@@ -255,11 +259,11 @@ function M.setup()
       local value = listchars.leadmultispace
       listchars.leadmultispace = nil
       vim.opt_local.listchars = listchars
-      echo("setlocal listchars-=leadmultispace:" .. value)
+      H.echo("setlocal listchars-=leadmultispace:" .. value)
     else
       local value = "┊" .. string.rep(" ", math.max(vim.fn.shiftwidth() - 1, 0))
       vim.opt_local.listchars:append({ leadmultispace = value })
-      echo("setlocal listchars+=" .. value)
+      H.echo("setlocal listchars+=" .. value)
     end
   end, opts)
 
@@ -286,8 +290,18 @@ function M.setup()
   vim.keymap.set("n", "zi", "zi<Cmd>setlocal foldlevel?<CR>", opts)
   vim.keymap.set("n", "z]", "<Cmd>let &foldcolumn = &foldcolumn + 1<CR><Cmd>setlocal foldcolumn?<CR>", opts)
   vim.keymap.set("n", "z[", "<Cmd>let &foldcolumn = &foldcolumn - 1<CR><Cmd>setlocal foldcolumn?<CR>", opts)
+end
 
-  setup_unimpaired_mappings()
+-- ============================================================================
+-- Public API
+-- ============================================================================
+
+M.setup = function(config)
+  -- Setup config
+  config = H.setup_config(config)
+
+  -- Apply config
+  H.apply_config(config)
 end
 
 return M
