@@ -10,12 +10,14 @@ local M = {}
 local H = {}
 
 H.default_config = {
+  move_mappings = nil,
   unimpaired_mappings = nil,
 }
 
 H.setup_config = function(config)
   vim.validate("config", config, "table", true)
   config = vim.tbl_deep_extend("force", vim.deepcopy(H.default_config), config or {})
+  vim.validate("move_mappings", config.unimpaired_mappings, "boolean", true)
   vim.validate("unimpaired_mappings", config.unimpaired_mappings, "boolean", true)
   return config
 end
@@ -29,15 +31,30 @@ H.echo = function(...)
 end
 
 H.apply_config = function(config)
+  H.setup_move_mappings(config)
   if config.unimpaired_mappings then
     H.setup_unimpaired_mappings()
-  elseif config.unimpaired_mappings == nil and vim.fn.globpath(vim.o.rtp, "plugin/unimpaired.vim") ~= "" then
+  elseif config.unimpaired_mappings == nil and vim.fn.globpath(vim.o.rtp, "plugin/unimpaired.vim") == "" then
     H.setup_unimpaired_mappings()
   end
   H.setup_toggle_mappings()
 end
 
---- Setup unimpaired-style mappings according to g:zero_toggle_unimpaired_mappings.
+-- Move line up/down
+H.setup_move_mappings = function(config)
+  vim.keymap.set({ "n", "i" }, "<Plug>(MoveLineUp)", "<Cmd>move .-2<Bar>normal! ==<CR>", { silent = true })
+  vim.keymap.set({ "n", "i" }, "<Plug>(MoveLineDown)", "<Cmd>move .+1<Bar>normal! ==<CR>", { silent = true })
+  vim.keymap.set("v", "<Plug>(MoveLineUp)", ":move '<-2<Bar>normal! gv=gv<CR>", { silent = true })
+  vim.keymap.set("v", "<Plug>(MoveLineDown)", ":move '>+1<Bar>normal! gv=gv<CR>", { silent = true })
+  -- vim.keymap.set("i", "<Plug>(InsertMoveLineUp)", "<C-O>:move .-2<Bar>normal! ==<CR>", { silent = true })
+  -- vim.keymap.set("i", "<Plug>(InsertMoveLineDown)", "<C-O>:move .+1<Bar>normal! ==<CR>", { silent = true })
+  if config.move_mappings ~= false then
+    vim.keymap.set({ "n", "v", "i" }, "<M-k>", "<Plug>(MoveLineUp)", { remap = true })
+    vim.keymap.set({ "n", "v", "i" }, "<M-j>", "<Plug>(MoveLineDown)", { remap = true })
+  end
+end
+
+-- Setup unimpaired-style mappings
 H.setup_unimpaired_mappings = function()
   local opts = { silent = true }
 
@@ -123,25 +140,8 @@ H.setup_unimpaired_mappings = function()
   end
 
   -- Move lines up/down
-  vim.keymap.set("n", "<M-j>", "<Cmd>move .+1<Bar>normal! ==<CR>", opts)
-  vim.keymap.set("n", "<M-k>", "<Cmd>move .-2<Bar>normal! ==<CR>", opts)
-  vim.keymap.set("v", "<M-j>", ":move '>+1<Bar>normal! gv=gv<CR>", opts)
-  vim.keymap.set("v", "<M-k>", ":move '<-2<Bar>normal! gv=gv<CR>", opts)
-  vim.keymap.set("i", "<M-j>", "<Cmd>move .+1<Bar>normal! ==<CR>", opts)
-  vim.keymap.set("i", "<M-k>", "<Cmd>move .-2<Bar>normal! ==<CR>", opts)
-
-  -- macOS Option+J / Option+K aliases
-  vim.keymap.set("n", "∆", "<M-j>")
-  vim.keymap.set("n", "˚", "<M-k>")
-  vim.keymap.set("v", "∆", "<M-j>")
-  vim.keymap.set("v", "˚", "<M-k>")
-  vim.keymap.set("i", "∆", "<M-j>")
-  vim.keymap.set("i", "˚", "<M-k>")
-
-  vim.keymap.set("n", "]e", "<M-j>")
-  vim.keymap.set("n", "[e", "<M-k>")
-  vim.keymap.set("v", "]e", "<M-j>")
-  vim.keymap.set("v", "[e", "<M-k>")
+  vim.keymap.set({ "n", "v" }, "[e", "<Plug>(MoveLineUp)", { remap = true })
+  vim.keymap.set({ "n", "v" }, "]e", "<Plug>(MoveLineDown)", { remap = true })
 end
 
 function H.setup_toggle_mappings()
@@ -193,6 +193,7 @@ function H.setup_toggle_mappings()
   -- Toggle clipboard
   if vim.fn.has("clipboard") == 1 then
     local clipboard = vim.fn.has("unnamedplus") == 1 and "unnamedplus" or "unnamed"
+
     vim.keymap.set("n", "yoy", function()
       if vim.tbl_contains(vim.opt.clipboard:get(), clipboard) then
         vim.opt.clipboard:remove(clipboard)
