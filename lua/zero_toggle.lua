@@ -11,6 +11,7 @@ local H = {}
 
 H.default_config = {
   move_mappings = nil,
+  insert_move_mappings = nil,
   unimpaired_mappings = nil,
 }
 
@@ -18,6 +19,7 @@ H.setup_config = function(config)
   vim.validate("config", config, "table", true)
   config = vim.tbl_deep_extend("force", vim.deepcopy(H.default_config), config or {})
   vim.validate("move_mappings", config.unimpaired_mappings, "boolean", true)
+  vim.validate("insert_move_mappings", config.unimpaired_mappings, "boolean", true)
   vim.validate("unimpaired_mappings", config.unimpaired_mappings, "boolean", true)
   return config
 end
@@ -46,11 +48,15 @@ H.setup_move_mappings = function(config)
   vim.keymap.set({ "n", "i" }, "<Plug>(MoveLineDown)", "<Cmd>move .+1<Bar>normal! ==<CR>", { silent = true })
   vim.keymap.set("v", "<Plug>(MoveLineUp)", ":move '<-2<Bar>normal! gv=gv<CR>", { silent = true })
   vim.keymap.set("v", "<Plug>(MoveLineDown)", ":move '>+1<Bar>normal! gv=gv<CR>", { silent = true })
-  -- vim.keymap.set("i", "<Plug>(InsertMoveLineUp)", "<C-O>:move .-2<Bar>normal! ==<CR>", { silent = true })
-  -- vim.keymap.set("i", "<Plug>(InsertMoveLineDown)", "<C-O>:move .+1<Bar>normal! ==<CR>", { silent = true })
+
   if config.move_mappings ~= false then
-    vim.keymap.set({ "n", "v", "i" }, "<M-k>", "<Plug>(MoveLineUp)", { remap = true })
-    vim.keymap.set({ "n", "v", "i" }, "<M-j>", "<Plug>(MoveLineDown)", { remap = true })
+    vim.keymap.set({ "n", "v" }, "<M-k>", "<Plug>(MoveLineUp)", { remap = true })
+    vim.keymap.set({ "n", "v" }, "<M-j>", "<Plug>(MoveLineDown)", { remap = true })
+  end
+
+  if config.insert_move_mappings ~= false then
+    vim.keymap.set("i", "<M-k>", "<Plug>(MoveLineUp)", { remap = true })
+    vim.keymap.set("i", "<M-j>", "<Plug>(MoveLineDown)", { remap = true })
   end
 end
 

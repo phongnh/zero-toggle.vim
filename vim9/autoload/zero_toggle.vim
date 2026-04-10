@@ -39,31 +39,39 @@ def SetupMoveMappings()
     vnoremap <silent> <Plug>(MoveLineDown) :move '>+1<Bar>normal! gv=gv<CR>
     inoremap <silent> <Plug>(MoveLineUp)   <Cmd>move .-2<Bar>normal! ==<CR>
     inoremap <silent> <Plug>(MoveLineDown) <Cmd>move .+1<Bar>normal! ==<CR>
-    # inoremap <silent> <Plug>(InsertMoveLineUp)   <C-O>:move .-2<Bar>normal! ==<CR>
-    # inoremap <silent> <Plug>(InsertMoveLineDown) <C-O>:move .+1<Bar>normal! ==<CR>
-    # macOS Alt key aliases (Option+J / Option+K) (∆ / ˚)
-    if has('mac')
-        # Kitty sends ∆ / ˚
-        execute 'nmap ˚ <Plug>(MoveLineUp)'
-        execute 'nmap ∆ <Plug>(MoveLineDown)'
-        execute 'vmap ˚ <Plug>(MoveLineUp)'
-        execute 'vmap ∆ <Plug>(MoveLineDown)'
-        execute 'imap ˚ <Plug>(MoveLineUp)'
-        execute 'imap ∆ <Plug>(MoveLineDown)'
-        # Alacritty / Wezterm send <1b>j / <1b>k
-        execute 'nmap k <Plug>(MoveLineUp)'
-        execute 'nmap j <Plug>(MoveLineDown)'
-        execute 'vmap k <Plug>(MoveLineUp)'
-        execute 'vmap j <Plug>(MoveLineDown)'
-        execute 'imap k <Plug>(MoveLineUp)'
-        execute 'imap j <Plug>(MoveLineDown)'
+
+    if get(g:, 'zero_toggle_move_mappings', true)
+        # macOS Alt key aliases (Option+J / Option+K) (∆ / ˚)
+        if has('mac')
+            # Kitty sends ∆ / ˚
+            execute 'nmap ˚ <Plug>(MoveLineUp)'
+            execute 'nmap ∆ <Plug>(MoveLineDown)'
+            execute 'vmap ˚ <Plug>(MoveLineUp)'
+            execute 'vmap ∆ <Plug>(MoveLineDown)'
+            # Alacritty / Wezterm send <1b>j / <1b>k
+            execute 'nmap k <Plug>(MoveLineUp)'
+            execute 'nmap j <Plug>(MoveLineDown)'
+            execute 'vmap k <Plug>(MoveLineUp)'
+            execute 'vmap j <Plug>(MoveLineDown)'
+        endif
+        nmap <M-j> <Plug>(MoveLineDown)
+        nmap <M-k> <Plug>(MoveLineUp)
+        vmap <M-j> <Plug>(MoveLineDown)
+        vmap <M-k> <Plug>(MoveLineUp)
     endif
-    nmap <M-j> <Plug>(MoveLineDown)
-    nmap <M-k> <Plug>(MoveLineUp)
-    vmap <M-j> <Plug>(MoveLineDown)
-    vmap <M-k> <Plug>(MoveLineUp)
-    imap <M-j> <Plug>(MoveLineDown)
-    imap <M-k> <Plug>(MoveLineUp)
+
+    if get(g:, 'zero_toggle_insert_move_mappings', true)
+        if has('mac')
+            # Kitty sends ∆ / ˚
+            execute 'imap ˚ <Plug>(MoveLineUp)'
+            execute 'imap ∆ <Plug>(MoveLineDown)'
+            # Alacritty / Wezterm send <1b>j / <1b>k
+            execute 'imap k <Plug>(MoveLineUp)'
+            execute 'imap j <Plug>(MoveLineDown)'
+        endif
+        imap <M-j> <Plug>(MoveLineDown)
+        imap <M-k> <Plug>(MoveLineUp)
+    endif
 enddef
 
 def SetupUnimpairedMappings()
